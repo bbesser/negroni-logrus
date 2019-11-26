@@ -17,6 +17,6 @@ If you want to reuse an already initialized `logrus.Logger`, you should be using
 
 ## Logging
 
-By default, starting requests and completed requests will be logged.
+By default, requests will generate a log entry when starting and completing.
 You can disable start messages using the option `logStarting` of the `Middleware` struct.
 You can disable completion messages by replacing the `Middleware.After` function with one that does not log.
