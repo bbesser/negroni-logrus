@@ -32,7 +32,7 @@ type Middleware struct {
 	// Name is the name of the application as recorded in latency metrics
 	Name   string
 	Before func(*logrus.Entry, *http.Request, string) *logrus.Entry
-	After  func(*logrus.Entry, negroni.ResponseWriter, time.Duration, string) *logrus.Entry
+	After  func(*logrus.Entry, negroni.ResponseWriter, time.Duration, string)
 
 	logStarting bool
 
@@ -147,7 +147,7 @@ type BeforeFunc func(*logrus.Entry, *http.Request, string) *logrus.Entry
 
 // AfterFunc is the func type used to modify or replace the *logrus.Entry after
 // calling the next func in the middleware chain
-type AfterFunc func(*logrus.Entry, negroni.ResponseWriter, time.Duration, string) *logrus.Entry
+type AfterFunc func(*logrus.Entry, negroni.ResponseWriter, time.Duration, string)
 
 // DefaultBefore is the default func assigned to *Middleware.Before
 func DefaultBefore(entry *logrus.Entry, req *http.Request, remoteAddr string) *logrus.Entry {
@@ -159,12 +159,11 @@ func DefaultBefore(entry *logrus.Entry, req *http.Request, remoteAddr string) *l
 }
 
 // DefaultAfter is the default func assigned to *Middleware.After
-func DefaultAfter(entry *logrus.Entry, res negroni.ResponseWriter, latency time.Duration, name string) *logrus.Entry {
+func DefaultAfter(entry *logrus.Entry, res negroni.ResponseWriter, latency time.Duration, name string) {
 	entry.WithFields(logrus.Fields{
 		"status":      res.Status(),
 		"text_status": http.StatusText(res.Status()),
 		"took":        latency,
 		fmt.Sprintf("measure#%s.latency", name): latency.Nanoseconds(),
 	}).Info("completed handling request")
-	return entry
 }

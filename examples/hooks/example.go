@@ -39,7 +39,7 @@ func customBefore(entry *logrus.Entry, _ *http.Request, remoteAddr string) *logr
 	})
 }
 
-func customAfter(entry *logrus.Entry, res negroni.ResponseWriter, latency time.Duration, name string) *logrus.Entry {
+func customAfter(entry *logrus.Entry, res negroni.ResponseWriter, latency time.Duration, name string) {
 	fields := logrus.Fields{
 		"ALL_DONE":        true,
 		"RESPONSE_STATUS": res.Status(),
@@ -53,5 +53,5 @@ func customAfter(entry *logrus.Entry, res negroni.ResponseWriter, latency time.D
 		delete(entry.Data, "request_id")
 	}
 
-	return entry.WithFields(fields)
+	entry.WithFields(fields).Info("custom completion message")
 }

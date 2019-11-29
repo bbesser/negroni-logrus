@@ -171,14 +171,24 @@ func TestMiddleware_ServeHTTP_BeforeOverride(t *testing.T) {
 
 func TestMiddleware_ServeHTTP_AfterOverride(t *testing.T) {
 	mw, rec, req := setupServeHTTP(t)
-	mw.After = func(entry *logrus.Entry, _ negroni.ResponseWriter, _ time.Duration, _ string) *logrus.Entry {
-		return entry.WithFields(logrus.Fields{"hambone": 57})
+	mw.After = func(entry *logrus.Entry, _ negroni.ResponseWriter, _ time.Duration, _ string) {
+		entry.WithFields(logrus.Fields{"hambone": 57}).Info("custom completion message")
 	}
 	mw.ServeHTTP(rec, req, func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(418)
 	})
 	lines := strings.Split(strings.TrimSpace(mw.Logger.Out.(*bytes.Buffer).String()), "\n")
-	assert.Len(t, lines, 1)
+	assert.Len(t, lines, 2)
+	assert.JSONEq(t,
+		fmt.Sprintf(`{"level":"info","method":"GET","msg":"started handling request",`+
+			`"remote":"10.10.10.10","request":"http://example.com/stuff?rly=ya",`+
+			`"request_id":"22035D08-98EF-413C-BBA0-C4E66A11B28D","time":"%s"}`, nowToday),
+		lines[0])
+	assert.JSONEq(t,
+		fmt.Sprintf(`{"level":"info","method":"GET","msg":"custom completion message",`+
+			`"remote":"10.10.10.10","request":"http://example.com/stuff?rly=ya","hambone":57,`+
+			`"request_id":"22035D08-98EF-413C-BBA0-C4E66A11B28D","time":"%s"}`, nowToday),
+		lines[1])
 }
 
 func TestMiddleware_ServeHTTP_logStartingFalse(t *testing.T) {
